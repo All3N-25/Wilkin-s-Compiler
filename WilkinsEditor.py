@@ -12,7 +12,6 @@ file_path = None
 """
 Bug List
 1. Nag aadd ng new line kada open.
-2. Hindi pa na totokenize maayos kapag hindi seperated by space.
 """
 
 def save_file():
