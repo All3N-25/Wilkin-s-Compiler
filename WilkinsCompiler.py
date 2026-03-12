@@ -10,8 +10,10 @@ Lexical Analyzer Phase
 - Gets the lexemes from the file
 - Identifies the property of the lexemes
 """
+
+# Returns a list of list
 def tokenizer(x: str) -> list:
-    
+    collections = []
     lexemes = []
     word = ""
 
@@ -24,22 +26,35 @@ def tokenizer(x: str) -> list:
             #lexemes.append('_')    #D naman na ata need to
 
         #Operators and Delimiter
-        elif char in arithmeticOperator or char in assignmentOperator or char == ';':
+        elif char == ";":
+            if word:
+                lexemes.append(word)
+                word = ""
+            lexemes.append(char)
+            collections.append(lexemes.copy())
+
+            lexemes.clear()
+
+        elif char in arithmeticOperator or char in assignmentOperator:
             if word:
                 lexemes.append(word)
                 word = ""
             lexemes.append(char)
         
-        #Characters
+        #Whitespace
         elif char == "\n":
             continue
+
         else:
             word += char
 
     if word:
         lexemes.append(word)
     
-    return lexemes
+    if lexemes:
+        collections.append(lexemes.copy())
+
+    return collections
 
 def Classifier(lexemes: str) -> str:
     global dataType

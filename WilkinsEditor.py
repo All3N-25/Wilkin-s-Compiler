@@ -13,7 +13,6 @@ file_path = None
 Bug List
 1. Nag aadd ng new line kada open.
 2. Hindi pa na totokenize maayos kapag hindi seperated by space.
-3. Hindi kompleto ung dictionary.
 """
 
 def save_file():
@@ -40,22 +39,35 @@ def open_file():
 
 def compile_code():
     save_file()
-    
+
+    #Read File Contents Before Tokenizer
     with open(file_path, "r") as input_file:
         text = input_file.read()
 
-    #Read File Contents Before Tokenizer
-    lexemes = list(CMP.tokenizer(text))
-    token = []
-    print(lexemes)
+    LA = lexicalAnalysis(text)
+    for i in LA:
+        print(i)
 
-    for lexeme in lexemes:
-        token.append(str(CMP.Classifier(lexeme)))
+def lexicalAnalysis(fileContents: str) -> dict:
+    collectionOfLexemes = list(CMP.tokenizer(fileContents))
+    print(collectionOfLexemes)
+
+    collectionOfTokens = []
+    for lexemes in collectionOfLexemes:
+        tokens = []
+
+        for i in lexemes:
+            tokens.append(CMP.Classifier(i))
+
+        collectionOfTokens.append(tokens)
     
-    print(token)
+    dictionaries = []
 
-    my_dict = dict(zip(lexemes, token))
-    print(my_dict)
+    for i, j in zip(collectionOfLexemes, collectionOfTokens):
+        dictionaries.append(dict(zip(i, j)))
+    
+    return dictionaries
+    
 
 # Custom top bar: left side behaves like menu, right side has Compile button.
 top_bar = Frame(root, bd=1, relief=RAISED)
