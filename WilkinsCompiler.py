@@ -35,6 +35,18 @@ def tokenizer(x: str) -> list:
 
             lexemes.clear()
 
+        elif char == "(":
+            if word:
+                lexemes.append(word)
+                word = ""
+            lexemes.append(char)
+
+        elif char == ")":
+            if word:
+                lexemes.append(word)
+                word = ""
+            lexemes.append(char)
+
         elif char in arithmeticOperator or char in assignmentOperator:
             if word:
                 lexemes.append(word)
@@ -87,12 +99,18 @@ def Classifier(lexemes: str) -> str:
 
     #Arithmetic Operator
     if lexemes in arithmeticOperator:
-        return "Arithmetic Comparison"
+        return "Arithmetic Operation"
 
     #Delimiter
     if lexemes == ';':
         return "Delimiter"
+    
+    if lexemes == '(':
+        return "Left Parenthesis"
 
+    if lexemes == ')':
+        return "Right Parenthesis"
+    
     #Default
     Errors.append(lexemes)
     return "Error"

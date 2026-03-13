@@ -2,54 +2,69 @@ from tkinter import *
 from tkinter.filedialog import asksaveasfilename, askopenfilename
 
 import WilkinsCompiler as CMP
+import os
 
 root = Tk()
 root.title("WilkinsEditor")
 root.geometry("900x600")
 
-file_path = None
+filePath = None
 
 """
 Bug List
 1. Nag aadd ng new line kada open.
 """
 
-def save_file():
-    global file_path
+def closeApp(event):
+    print("Closing...")
+    root.destroy()
 
-    if not file_path:
-        file_path = asksaveasfilename(defaultextension=".txt")
+def checkFileExtension(filePath, allowedExtension=".wil"):
+    ext = os.path.splitext(filePath)[1].lower()
 
-    with open(file_path, "w") as output_file:
+    if ext in allowedExtension:
+        return True
+    else:
+        return False
+
+def saveFile():
+    global filePath
+
+    if not filePath:
+        filePath = asksaveasfilename(defaultextension=".wil")
+
+    with open(filePath, "w") as outputFile:
         text = text_box.get(1.0, END)
-        output_file.write(text)
+        outputFile.write(text)
 
+def openFile():
+    global filePath
 
-def open_file():
-    global file_path
+    filePath = askopenfilename()
 
-    file_path = askopenfilename()
-    if not file_path:
+    if not filePath:
         return
-    with open(file_path, "r") as input_file:
-        text = input_file.read()
+    with open(filePath, "r") as inputFile:
+        text = inputFile.read()
         text_box.delete(1.0, END)
         text_box.insert(1.0, text)
 
-def compile_code():
-    save_file()
+def compileCode():
+    saveFile()
 
     #Read File Contents Before Tokenizer
-    with open(file_path, "r") as input_file:
-        text = input_file.read()
+    if (checkFileExtension(filePath)):
+        with open(filePath, "r") as inputFile:
+            text = inputFile.read()
 
-    LA = lexicalAnalysis(text)
-    for i in LA:
-        print(i)
+        LA = lexicalAnalysis(text)
+        for i in LA:
+            print(i)
+    else:
+        print("Unsupported file.")
 
 def lexicalAnalysis(fileContents: str) -> dict:
     collectionOfLexemes = list(CMP.tokenizer(fileContents))
-    print(collectionOfLexemes)
 
     collectionOfTokens = []
     for lexemes in collectionOfLexemes:
@@ -74,15 +89,21 @@ top_bar.pack(side=TOP, fill=X)
 
 file_menu_button = Menubutton(top_bar, text="File", underline=0, relief=FLAT)
 file_menu = Menu(file_menu_button, tearoff=0)
-file_menu.add_command(label="Open", command=open_file)
-file_menu.add_command(label="Save", command=save_file)
+file_menu.add_command(label="Open", command=openFile)
+file_menu.add_command(label="Save", command=saveFile)
 file_menu_button.config(menu=file_menu)
 file_menu_button.pack(side=LEFT, padx=6, pady=2)
 
-compile_button = Button(top_bar, text="Compile", command=compile_code)
+compile_button = Button(top_bar, text="Compile", command=compileCode)
 compile_button.pack(side=RIGHT, padx=8, pady=2)
 
 text_box = Text(root)
 text_box.pack(fill=BOTH, expand=True)
+
+root.bind('<Escape>', closeApp)
+
+# Focus the root window to ensure it captures key presses
+root.focus_set()
+
 
 root.mainloop()
