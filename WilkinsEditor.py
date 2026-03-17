@@ -49,7 +49,7 @@ def openFile():
         text_box.delete(1.0, END)
         text_box.insert(1.0, text)
 
-def compileCode():
+def compileCode(): # ======== COMPILES THE CODE ========
     saveFile()
 
     #Read File Contents Before Tokenizer
@@ -57,13 +57,21 @@ def compileCode():
         with open(filePath, "r") as inputFile:
             text = inputFile.read()
 
+        tokens = []
+        
         LA = lexicalAnalysis(text)
         for i in LA:
-            print(i)
+            tokens.append(i)
+            print(i) # Prints the list of tokens in the console for debugging purposes.
+        
+        CMP.syntaxAnalysis(tokens) 
     else:
         print("Unsupported file.")
 
-def lexicalAnalysis(fileContents: str) -> dict:
+
+
+# 3/17 - converted output from dictionary to list
+def lexicalAnalysis(fileContents: str) -> list:
     collectionOfLexemes = list(CMP.tokenizer(fileContents))
 
     collectionOfTokens = []
@@ -71,16 +79,10 @@ def lexicalAnalysis(fileContents: str) -> dict:
         tokens = []
 
         for i in lexemes:
-            tokens.append(CMP.Classifier(i))
+            tokens.append((i, CMP.Classifier(i)))  # store as list (lexeme, token)
 
-        collectionOfTokens.append(tokens)
-    
-    dictionaries = []
-
-    for i, j in zip(collectionOfLexemes, collectionOfTokens):
-        dictionaries.append(dict(zip(i, j)))
-    
-    return dictionaries
+        collectionOfTokens.extend(tokens)
+    return collectionOfTokens
     
 
 # Custom top bar: left side behaves like menu, right side has Compile button.
