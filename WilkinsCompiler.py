@@ -1,7 +1,7 @@
 import re
 
 keywords = ["var", "input", "output"]
-arithmeticOperator = ['+', '-', '*', '/']
+arithmeticOperator = ['+', '-', '*', '/', '^']
 assignmentOperator = ['=']
 Errors = []
 
@@ -70,47 +70,47 @@ def tokenizer(x: str) -> list:
 
 def Classifier(lexemes: str) -> str:
     global dataType
-
-    # D naman ata nito need
-    # if lexemes == "_":
-    #     return "White Space"
-
+    
     #DataType
     if lexemes in keywords:
         dataType = lexemes
-        return "Keyword"
+        return "KEYWORD"
 
     #Syntax
     if re.fullmatch(r"(var|input|output)\d+", lexemes):
         Errors.append(lexemes)
-        return "Syntax Error"
+        return "SYNTAX_ERROR"
 
-    #Identifier
+    #Identifier/Variable Name
     if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,29}", lexemes):
-        return "Identifier"
+        return "IDENTIFIER"
 
     #Numeric Literal
     if re.fullmatch(r"[0-9]+", lexemes):
-        return "Numeric Literal"
+        return "NUMBER"
 
-    #Assignment Operator
-    if lexemes in assignmentOperator:
-        return "Assignment Operator"
+    #Arithmetic and Assignment Operator
+    if lexemes == '+':
+        return "PLUS"
+    if lexemes == '-':
+        return "MINUS"
+    if lexemes == '*':
+        return "MULT"
+    if lexemes == '/':
+        return "DIV"
+    if lexemes == "^":
+        return "POW"
+    if lexemes == '=':
+        return "ASSIGN"
 
-    #Arithmetic Operator
-    if lexemes in arithmeticOperator:
-        return "Arithmetic Operation"
-
-    #Delimiter
+    #Delimiters
     if lexemes == ';':
-        return "Delimiter"
-    
+        return "SEMICOLON"
     if lexemes == '(':
-        return "Left Parenthesis"
-
+        return "LPAREN"
     if lexemes == ')':
-        return "Right Parenthesis"
-    
+        return "RPAREN"
+
     #Default
     Errors.append(lexemes)
     return "Error"
