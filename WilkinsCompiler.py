@@ -379,3 +379,60 @@ def semanticAnalysis(tokens: list) -> bool:
 
     print("Semantic Analysis Successful")
     return True
+
+
+"""
+CODE GENERATION PHASE
+- Translates the token stream into Python code
+"""
+def codeGeneration(tokens: list) -> str:
+    statements = []
+    current_stmt = []
+    for token in tokens:
+        current_stmt.append(token)
+        if token[1] == "SEMICOLON":
+            statements.append(current_stmt)
+            current_stmt = []
+
+    lines = []
+
+    for stmt in statements:
+        types  = [t[1] for t in stmt]
+        lexems = [t[0] for t in stmt]
+
+        # VarDecl: var x = <expr>;
+        if types[0] == "VAR":
+            var_name = lexems[1]
+            expr = buildExpr(lexems[3:-1])
+            lines.append(f"{var_name} = {expr}")
+
+        # AssignStmt: x = <expr>;
+        elif types[0] == "IDENTIFIER" and types[1] == "ASSIGN":
+            var_name = lexems[0]
+            expr = buildExpr(lexems[2:-1])
+            lines.append(f"{var_name} = {expr}")
+
+        # InputStmt: input(x);
+        elif types[0] == "INPUT":
+            var_name = lexems[2]
+            lines.append(f'{var_name} = int(input("Enter {var_name}: "))')
+
+        # OutputStmt: output(x);
+        elif types[0] == "OUTPUT":
+            var_name = lexems[2]
+            lines.append(f'print("{var_name} =", {var_name})')
+
+    return "\n".join(lines)
+
+
+def buildExpr(lexems: list) -> str:
+    # Convert ^ to ** for Python, join everything else as-is
+    result = []
+    for lex in lexems:
+        if lex == "^":
+            result.append("**")
+        else:
+            result.append(lex)
+    return " ".join(result)
+
+

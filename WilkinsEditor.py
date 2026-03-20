@@ -3,6 +3,9 @@ from tkinter.filedialog import asksaveasfilename, askopenfilename
 
 import WilkinsCompiler as CMP
 import os
+import subprocess
+import sys
+import tempfile
 
 root = Tk()
 root.title("WilkinsEditor")
@@ -68,11 +71,17 @@ def compileCode():
         if not CMP.syntaxAnalysis(tokens):
             return
 
-        CMP.semanticAnalysis(tokens)
+        if not CMP.semanticAnalysis(tokens):
+            return
+
+        python_code = CMP.codeGeneration(tokens)
+        print("\n--- Generated Python Code ---")
+        print(python_code)
+        print("-----------------------------\n")
+        
+        runInNewTerminal(python_code)
     else:
         print("Unsupported file.")
-
-
 
 # 3/17 - converted output from dictionary to list
 def lexicalAnalysis(fileContents: str) -> list:
@@ -88,6 +97,29 @@ def lexicalAnalysis(fileContents: str) -> list:
         collectionOfTokens.extend(tokens)
     return collectionOfTokens
     
+def runInNewTerminal(python_code: str):
+    # Write to a fixed output file so it's easy to find/debug
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output_gen.py")
+    
+    with open(output_path, "w") as f:
+        f.write(python_code)
+
+    if sys.platform == "win32":
+        # /k keeps the terminal open after the script finishes
+        subprocess.Popen(
+            f'start cmd /k python "{output_path}"',
+            shell=True
+        )
+
+    elif sys.platform == "darwin":  # macOS
+        script = f'tell app "Terminal" to do script "python3 \\"{output_path}\\"; echo; echo \\"--- Program finished ---\\"; read"'
+        subprocess.Popen(["osascript", "-e", script])
+
+    else:  # Linux
+        subprocess.Popen([
+            "x-terminal-emulator", "-e",
+            f'bash -c "python3 \\"{output_path}\\"; echo; echo \\"--- Program finished ---\\"; read"'
+        ])
 
 # Custom top bar: left side behaves like menu, right side has Compile button.
 top_bar = Frame(root, bd=1, relief=RAISED)

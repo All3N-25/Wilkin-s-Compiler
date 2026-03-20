@@ -1,2 +1,8 @@
-x = abc;
+var x = 10;
+var y = 0;
+input(y);
+var z = x + y;
+output(z);
+
+
 
