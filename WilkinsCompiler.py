@@ -280,12 +280,18 @@ def parse(tokens: list, table: dict, start_symbol: str, grammar: dict) -> bool:
 
     while stack:
         top = stack.pop()
-        current = tokens[index]
 
+        if index >= len(tokens):
+            print("Syntax Error: unexpected end of input")
+            return False
+
+        current = tokens[index]
         #print("STACK:", stack, "INPUT:", tokens[index:]) # Debugging output to trace the parsing process
 
         if top == current:
             index += 1
+            if top == "$":
+                break
 
         elif top == "ε":
             continue
@@ -298,12 +304,17 @@ def parse(tokens: list, table: dict, start_symbol: str, grammar: dict) -> bool:
             production = table[(top, current)]
             stack.extend(reversed(production))
 
-        else:
-            print(f"Syntax Error at token {current}")
-            return False
+        # else:
+        #     print(f"Syntax Error at token {current}")
+        #     return False
 
-    print("Syntax Analysis Successful")
-    return True
+    if index != len(tokens):
+        print(f"Syntax Error: unexpected token '{tokens[index]}'")
+        return False
+    else:
+        print("Syntax Analysis Successful")
+        return True
+
 
 def syntaxAnalysis(tokens: list) -> bool:
     FIRST = compute_first(grammar)
