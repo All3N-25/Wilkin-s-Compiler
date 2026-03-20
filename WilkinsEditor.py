@@ -49,22 +49,26 @@ def openFile():
         text_box.delete(1.0, END)
         text_box.insert(1.0, text)
 
-def compileCode(): # ======== COMPILES THE CODE ========
+def compileCode():
     saveFile()
+    CMP.Errors.clear()  # reset lexical errors before each compile
 
-    #Read File Contents Before Tokenizer
-    if (checkFileExtension(filePath)):
+    if checkFileExtension(filePath):
         with open(filePath, "r") as inputFile:
             text = inputFile.read()
 
-        tokens = []
-        
-        LA = lexicalAnalysis(text)
-        for i in LA:
-            tokens.append(i)
-            print(i) # Prints the list of tokens in the console for debugging purposes.
-        
-        CMP.syntaxAnalysis(tokens) 
+        tokens = list(lexicalAnalysis(text))
+        for tok in tokens:
+            print(tok)
+
+        if CMP.Errors:
+            print(f"Lexical Errors: {CMP.Errors}")
+            return
+
+        if not CMP.syntaxAnalysis(tokens):
+            return
+
+        CMP.semanticAnalysis(tokens)
     else:
         print("Unsupported file.")
 

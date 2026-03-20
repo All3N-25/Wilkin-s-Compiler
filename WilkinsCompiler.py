@@ -312,3 +312,70 @@ def syntaxAnalysis(tokens: list) -> bool:
 
     token_stream = extract_token_types(tokens)
     return parse(token_stream, parsing_table, "Program", grammar)
+
+
+"""
+Semenatic Analysis Phase
+- Tracks declared variables in a symbol table
+- Detects: duplicate declarations, use-before-declaration
+"""
+def semanticAnalysis(tokens: list) -> bool:
+    symbol_table = set() 
+    errors = []
+
+    # Turns each delimiter into a line of code.
+    statements = []
+    current_stmt = []
+    for token in tokens:
+        current_stmt.append(token)
+        if token[1] == "SEMICOLON":
+            statements.append(current_stmt)
+            current_stmt = []
+
+    for stmt in statements:
+        if not stmt:
+            continue
+
+        types  = [t[1] for t in stmt]
+        lexems = [t[0] for t in stmt]
+
+        # VarDecl: VAR IDENTIFIER ASSIGN <Expr> SEMICOLON
+        if types[0] == "VAR":
+            if len(stmt) >= 2 and types[1] == "IDENTIFIER":
+                var_name = lexems[1]
+                if var_name in symbol_table:
+                    errors.append(f"Semantic Error: '{var_name}' is already declared.")
+                else:
+                    symbol_table.add(var_name)
+                # Check if variables inside the expression exists.
+                for i in range(3, len(stmt) - 1):
+                    if types[i] == "IDENTIFIER" and lexems[i] not in symbol_table:
+                        errors.append(f"Semantic Error: '{lexems[i]}' used before declaration.")
+
+        # AssignStmt: IDENTIFIER ASSIGN <Expr> SEMICOLON
+        elif types[0] == "IDENTIFIER":
+            if lexems[0] not in symbol_table:
+                errors.append(f"Semantic Error: '{lexems[0]}' assigned before declaration.")
+            for i in range(2, len(stmt) - 1):
+                if types[i] == "IDENTIFIER" and lexems[i] not in symbol_table:
+                    errors.append(f"Semantic Error: '{lexems[i]}' used before declaration.")
+
+        # InputStmt: INPUT LPAREN IDENTIFIER RPAREN SEMICOLON
+        elif types[0] == "INPUT":
+            if len(stmt) >= 3 and types[2] == "IDENTIFIER":
+                if lexems[2] not in symbol_table:
+                    errors.append(f"Semantic Error: '{lexems[2]}' in input() is not declared.")
+
+        # OutputStmt: OUTPUT LPAREN IDENTIFIER RPAREN SEMICOLON
+        elif types[0] == "OUTPUT":
+            if len(stmt) >= 3 and types[2] == "IDENTIFIER":
+                if lexems[2] not in symbol_table:
+                    errors.append(f"Semantic Error: '{lexems[2]}' in output() is not declared.")
+
+    if errors:
+        for err in errors:
+            print(err)
+        return False
+
+    print("Semantic Analysis Successful")
+    return True
