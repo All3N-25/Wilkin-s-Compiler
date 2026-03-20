@@ -34,7 +34,6 @@ def tokenizer(x: str) -> list:
             if word:
                 lexemes.append(word)
                 word = ""
-            #lexemes.append('_')    #D naman na ata need to
 
         #Delimiters
         elif char in delimiters:
@@ -117,8 +116,9 @@ grammar = { # Rules
     "Program": [["StmtList"]],
     "StmtList": [["Stmt", "StmtList"], ["ε"]],
     "Stmt": [["VarDecl"], ["AssignStmt"], ["InputStmt"], ["OutputStmt"]],
+    
+    # Statement rules
     "AssignStmt": [["IDENTIFIER", "ASSIGN", "Expr", "SEMICOLON"]],
-
     "VarDecl": [["VAR", "IDENTIFIER", "ASSIGN", "Expr", "SEMICOLON"]],
     "InputStmt": [["INPUT", "LPAREN", "IDENTIFIER", "RPAREN", "SEMICOLON"]],
     "OutputStmt": [["OUTPUT", "LPAREN", "IDENTIFIER", "RPAREN", "SEMICOLON"]],
@@ -157,13 +157,11 @@ def compute_first(grammar: dict) -> dict:
         FIRST[nt] = set()
 
     changed = True
-
     while changed:
         changed = False
 
         for nt in grammar:
             for production in grammar[nt]:
-
                 add_epsilon = True
 
                 for symbol in production:
@@ -210,14 +208,11 @@ def compute_follow(grammar: dict, FIRST: dict) -> dict:
                 for i, symbol in enumerate(production):
 
                     if symbol in grammar:
-
                         beta = production[i+1:]
-
                         first_beta = set()
                         epsilon_in_all = True
 
                         for b in beta:
-
                             if b not in grammar:
                                 first_beta.add(b)
                                 epsilon_in_all = False
@@ -234,7 +229,7 @@ def compute_follow(grammar: dict, FIRST: dict) -> dict:
 
                         if epsilon_in_all:
                             FOLLOW[symbol] |= FOLLOW[nt]
-
+                            
                         if len(FOLLOW[symbol]) > before:
                             changed = True
 
@@ -261,9 +256,8 @@ def build_parsing_table(grammar: dict, FIRST: dict, FOLLOW: dict) -> dict:
 
     for A in grammar:
         for production in grammar[A]:
-
             first_alpha = first_of_string(production, FIRST, grammar)
-
+            
             for terminal in (first_alpha - {"ε"}):
                 table[(A, terminal)] = production
 
@@ -281,23 +275,17 @@ def parse(tokens: list, table: dict, start_symbol: str, grammar: dict) -> bool:
     while stack:
         top = stack.pop()
         current = tokens[index]
-
-        #print("STACK:", stack, "INPUT:", tokens[index:]) # Debugging output to trace the parsing process
-
+        #print("STACK:", stack, "INPUT:", tokens[index:]) # FOR DEBUGGING - output to trace the parsing process
         if top == current:
             index += 1
-
         elif top == "ε":
             continue
-
         elif top not in grammar:
             print(f"Syntax Error: expected {top}, got {current}")
             return False
-
         elif (top, current) in table:
             production = table[(top, current)]
             stack.extend(reversed(production))
-
         else:
             print(f"Syntax Error at token {current}")
             return False
@@ -323,7 +311,7 @@ def semanticAnalysis(tokens: list) -> bool:
     symbol_table = set() 
     errors = []
 
-    # Turns each delimiter into a line of code.
+    # Turns each delimiter into a line of code
     statements = []
     current_stmt = []
     for token in tokens:
@@ -338,8 +326,8 @@ def semanticAnalysis(tokens: list) -> bool:
 
         types  = [t[1] for t in stmt]
         lexems = [t[0] for t in stmt]
-
-        # VarDecl: VAR IDENTIFIER ASSIGN <Expr> SEMICOLON
+        
+        # VarDecl
         if types[0] == "VAR":
             if len(stmt) >= 2 and types[1] == "IDENTIFIER":
                 var_name = lexems[1]
@@ -347,12 +335,11 @@ def semanticAnalysis(tokens: list) -> bool:
                     errors.append(f"Semantic Error: '{var_name}' is already declared.")
                 else:
                     symbol_table.add(var_name)
-                # Check if variables inside the expression exists.
                 for i in range(3, len(stmt) - 1):
                     if types[i] == "IDENTIFIER" and lexems[i] not in symbol_table:
                         errors.append(f"Semantic Error: '{lexems[i]}' used before declaration.")
 
-        # AssignStmt: IDENTIFIER ASSIGN <Expr> SEMICOLON
+        # AssignStmt
         elif types[0] == "IDENTIFIER":
             if lexems[0] not in symbol_table:
                 errors.append(f"Semantic Error: '{lexems[0]}' assigned before declaration.")
@@ -360,13 +347,13 @@ def semanticAnalysis(tokens: list) -> bool:
                 if types[i] == "IDENTIFIER" and lexems[i] not in symbol_table:
                     errors.append(f"Semantic Error: '{lexems[i]}' used before declaration.")
 
-        # InputStmt: INPUT LPAREN IDENTIFIER RPAREN SEMICOLON
+        # InputStmt
         elif types[0] == "INPUT":
             if len(stmt) >= 3 and types[2] == "IDENTIFIER":
                 if lexems[2] not in symbol_table:
                     errors.append(f"Semantic Error: '{lexems[2]}' in input() is not declared.")
 
-        # OutputStmt: OUTPUT LPAREN IDENTIFIER RPAREN SEMICOLON
+        # OutputStmt
         elif types[0] == "OUTPUT":
             if len(stmt) >= 3 and types[2] == "IDENTIFIER":
                 if lexems[2] not in symbol_table:
@@ -400,24 +387,24 @@ def codeGeneration(tokens: list) -> str:
         types  = [t[1] for t in stmt]
         lexems = [t[0] for t in stmt]
 
-        # VarDecl: var x = <expr>;
+        # VarDecl
         if types[0] == "VAR":
             var_name = lexems[1]
             expr = buildExpr(lexems[3:-1])
             lines.append(f"{var_name} = {expr}")
 
-        # AssignStmt: x = <expr>;
+        # AssignStmt
         elif types[0] == "IDENTIFIER" and types[1] == "ASSIGN":
             var_name = lexems[0]
             expr = buildExpr(lexems[2:-1])
             lines.append(f"{var_name} = {expr}")
 
-        # InputStmt: input(x);
+        # InputStmt
         elif types[0] == "INPUT":
             var_name = lexems[2]
             lines.append(f'{var_name} = int(input("Enter {var_name}: "))')
 
-        # OutputStmt: output(x);
+        # OutputStmt
         elif types[0] == "OUTPUT":
             var_name = lexems[2]
             lines.append(f'print("{var_name} =", {var_name})')
@@ -426,10 +413,9 @@ def codeGeneration(tokens: list) -> str:
 
 
 def buildExpr(lexems: list) -> str:
-    # Convert ^ to ** for Python, join everything else as-is
     result = []
     for lex in lexems:
-        if lex == "^":
+        if lex == "^": # converts ^ to ** for exponentiation in python
             result.append("**")
         else:
             result.append(lex)

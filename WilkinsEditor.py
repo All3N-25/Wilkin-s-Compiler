@@ -42,9 +42,8 @@ def saveFile():
 
 def openFile():
     global filePath
-
     filePath = askopenfilename()
-
+    
     if not filePath:
         return
     with open(filePath, "r") as inputFile:
@@ -75,10 +74,12 @@ def compileCode():
             return
 
         python_code = CMP.codeGeneration(tokens)
+        
+        # FOR DEBUGGING - print the generated Python code before execution
         print("\n--- Generated Python Code ---")
         print(python_code)
         print("-----------------------------\n")
-        
+
         runInNewTerminal(python_code)
     else:
         print("Unsupported file.")
@@ -86,8 +87,8 @@ def compileCode():
 # 3/17 - converted output from dictionary to list
 def lexicalAnalysis(fileContents: str) -> list:
     collectionOfLexemes = list(CMP.tokenizer(fileContents))
-
     collectionOfTokens = []
+    
     for lexemes in collectionOfLexemes:
         tokens = []
 
@@ -98,24 +99,25 @@ def lexicalAnalysis(fileContents: str) -> list:
     return collectionOfTokens
     
 def runInNewTerminal(python_code: str):
-    # Write to a fixed output file so it's easy to find/debug
     output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output_gen.py")
     
     with open(output_path, "w") as f:
         f.write(python_code)
 
-    if sys.platform == "win32":
-        # /k keeps the terminal open after the script finishes
+    # Windows
+    if sys.platform == "win32": 
         subprocess.Popen(
             f'start cmd /k python "{output_path}"',
             shell=True
         )
 
-    elif sys.platform == "darwin":  # macOS
+    # macOS
+    elif sys.platform == "darwin":
         script = f'tell app "Terminal" to do script "python3 \\"{output_path}\\"; echo; echo \\"--- Program finished ---\\"; read"'
         subprocess.Popen(["osascript", "-e", script])
 
-    else:  # Linux
+    # Linux
+    else:
         subprocess.Popen([
             "x-terminal-emulator", "-e",
             f'bash -c "python3 \\"{output_path}\\"; echo; echo \\"--- Program finished ---\\"; read"'
@@ -142,6 +144,4 @@ root.bind('<Escape>', closeApp)
 
 # Focus the root window to ensure it captures key presses
 root.focus_set()
-
-
 root.mainloop()
