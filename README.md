@@ -14,7 +14,7 @@ Choose one of the following setup options:
 
 ### Option 2 — Clone via Git
 ```bash
-git clone https://github.com/All3N-25/Wilkin-s-Compiler/tree/main
+git clone https://github.com/All3N-25/Wilkin-s-Compiler.git
 ```
 
 ---
