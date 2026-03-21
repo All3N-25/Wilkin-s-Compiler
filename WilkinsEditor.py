@@ -13,11 +13,6 @@ root.geometry("900x600")
 
 filePath = None
 
-"""
-Bug List
-1. Nag aadd ng new line kada open.
-"""
-
 def closeApp(event):
     print("Closing...")
     root.destroy()
