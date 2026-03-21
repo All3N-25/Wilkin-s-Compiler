@@ -35,18 +35,19 @@ def tokenizer(x: str) -> list:
     i = 0
     
     while i < len(x):
-        two = x[i:i+2]
+        com = x[i:i+2]
         char = x[i]
 
+        #Ignore Comments
         if isComment:
-            if two == "*/":
+            if com == "*/":
                 isComment = False
                 i += 2
                 continue
             i += 1
             continue
 
-        if two == "/*":
+        if com == "/*":
             if word:
                 lexemes.append(word)
                 word = ""
