@@ -16,6 +16,10 @@ delimiters = {
 }
 Errors = []
 
+comments = {
+    "/*": "SComment",
+    "*/": "EComment"
+}
 """
 Lexical Analyzer Phase
 - Gets the lexemes from the file
@@ -27,47 +31,56 @@ def tokenizer(x: str) -> list:
     collections = []
     lexemes = []
     word = ""
+    isComment = False
+    i = 0
+    
+    while i < len(x):
+        two = x[i:i+2]
+        char = x[i]
 
-    for char in x:
-        #White Space
-        if char == " ":
+        if isComment:
+            if two == "*/":
+                isComment = False
+                i += 2
+                continue
+            i += 1
+            continue
+
+        if two == "/*":
+            if word:
+                lexemes.append(word)
+                word = ""
+            isComment = True
+            i += 2
+            continue
+
+        if char in " \n\t":
             if word:
                 lexemes.append(word)
                 word = ""
 
-        #Delimiters
         elif char in delimiters:
-            if delimiters[char] == "SEMICOLON":
-                if word:
-                    lexemes.append(word)
-                    word = ""
-                lexemes.append(char)
+            if word:
+                lexemes.append(word)
+                word = ""
+            lexemes.append(char)
+            if char == ";":
                 collections.append(lexemes.copy())
-
                 lexemes.clear()
-            else:
-                if word:
-                    lexemes.append(word)
-                    word = ""
-                lexemes.append(char)
 
-        #Operators
         elif char in operators:
             if word:
                 lexemes.append(word)
                 word = ""
             lexemes.append(char)
-        
-        #Whitespace
-        elif char == "\n":
-            continue
 
         else:
             word += char
 
+        i += 1
+
     if word:
         lexemes.append(word)
-    
     if lexemes:
         collections.append(lexemes.copy())
 
