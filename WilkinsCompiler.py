@@ -338,8 +338,8 @@ def semanticAnalysis(tokens: list) -> bool:
         if not stmt:
             continue
 
-        types  = [t[1] for t in stmt]
-        lexems = [t[0] for t in stmt]
+        types  = [t[1] for t in stmt]   #Values
+        lexems = [t[0] for t in stmt]   #Keys
         
         # VarDecl
         if types[0] == "VAR":
