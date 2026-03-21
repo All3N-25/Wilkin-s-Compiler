@@ -300,9 +300,9 @@ def parse(tokens: list, table: dict, start_symbol: str, grammar: dict) -> bool:
         elif (top, current) in table:
             production = table[(top, current)]
             stack.extend(reversed(production))
-        # else:
-        #     print(f"Syntax Error at token {current}")
-        #     return False
+        else:
+            print(f"Syntax Error: expected {top}, got {current}")
+            return False
 
     print("Syntax Analysis Successful")
     return True
